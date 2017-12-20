@@ -27,6 +27,14 @@ from keras.utils import plot_model
 
 from sklearn.metrics import confusion_matrix
 
+class send_log(Callback):
+	
+	def __init__(self,log_dir,log_name):
+		self.logfolder = log_dir+log_name
+	def on_epoch_end(self, epochs, logs):
+		os.system("scp"+self.logfolder)
+		
+
 class log_macc(Callback):
 	
 	def __init__(self,x_val,y_val,val_parts,res_thresh):
@@ -214,10 +222,10 @@ if __name__ == '__main__':
 	verbose=verbose
 	
 	
-	model_dir='/media/taufiq/Data/heart_sound/models/'
-	fold_dir='/media/taufiq/Data/heart_sound/feature/potes_1DCNN/balancedCV/folds/'
+	model_dir='/home/taufiq/Data/heartnet/models/'
+	fold_dir='/home/taufiq/Data/heartnet/feature/balancedCV/folds/'
 	log_name=foldname+ ' ' + str(datetime.now())
-	log_dir= '/media/taufiq/Data/heart_sound/Heart_Sound/codes/logs/'
+	log_dir= '/home/taufiq/Data/heartnet/codes/logs/'
 	if not os.path.exists(model_dir+log_name):
 		os.makedirs(model_dir+log_name)
 	checkpoint_name=model_dir+log_name+"/"+'weights.{epoch:04d}-{val_acc:.4f}.hdf5'
