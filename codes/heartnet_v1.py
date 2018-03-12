@@ -25,7 +25,7 @@ from keras.optimizers import Adam#, Nadam, Adamax
 from keras.callbacks1 import TensorBoard, Callback, ReduceLROnPlateau
 from keras.callbacks1 import LearningRateScheduler, ModelCheckpoint, CSVLogger
 from keras import backend as K
-from keras.utils import plot_model
+from keras.utils import plot_model, to_categorical
 from custom_layers import Conv1D_zerophase_linear, Conv1D_linearphase, Conv1D_zerophase
 from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
@@ -214,7 +214,7 @@ def heartnet(load_path,activation_function='relu', bn_momentum=0.99, bias=False,
                    kernel_regularizer=l2(l2_reg_dense))(merged)
     # ~ merged = BatchNormalization(epsilon=eps,momentum=bn_momentum,axis=-1) (merged)
     merged = Dropout(rate=dropout_rate_dense, seed=random_seed)(merged)
-    merged = Dense(1, activation='sigmoid')(merged)
+    merged = Dense(2, activation='softmax')(merged)
 
     model = Model(inputs=input, outputs=merged)
 
@@ -222,7 +222,7 @@ def heartnet(load_path,activation_function='relu', bn_momentum=0.99, bias=False,
         model.load_weights(filepath=load_path, by_name=False)
 
     adam = Adam(lr=lr, decay=lr_decay)
-    model.compile(optimizer=adam, loss='binary_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer=adam, loss='categorical_crossentropy', metrics=['accuracy'])
     return model
 
 
@@ -467,10 +467,12 @@ if __name__ == '__main__':
         ################### Reshaping ############
 
         x_train, y_train, x_val, y_val = reshape_folds(x_train, x_val, y_train, y_val)
+        y_train = to_categorical(y_train)
+        y_val=to_categorical(y_val)
 
         ############### Write metadata for embedding visualizer ############
 
-        metadata_file = write_meta(y_val,log_dir)
+        # metadata_file = write_meta(y_val,log_dir)
 
         ############## Create a model ############
 
@@ -480,16 +482,16 @@ if __name__ == '__main__':
         model.summary()
         plot_model(model, to_file='model.png', show_shapes=True)
 
-        embedding_layer_names =set(layer.name
-                            for layer in model.layers
-                            if (layer.name.startswith('dense_')))
-        print(embedding_layer_names)
+        # embedding_layer_names =set(layer.name
+        #                     for layer in model.layers
+        #                     if (layer.name.startswith('dense_')))
+        # print(embedding_layer_names)
         ####### Define Callbacks ######
 
         modelcheckpnt = ModelCheckpoint(filepath=checkpoint_name,
                                         monitor='val_acc', save_best_only=False, mode='max')
         tensbd = TensorBoard(log_dir=log_dir + log_name,
-                             batch_size=batch_size, histogram_freq=100,
+                             # batch_size=batch_size, histogram_freq=100,
                              # embeddings_freq=99,
                              # embeddings_layer_names=embedding_layer_names,
                              # embeddings_data=x_val,
@@ -520,7 +522,7 @@ if __name__ == '__main__':
                       verbose=verbose,
                       validation_data=(x_val, y_val),
                       callbacks=[modelcheckpnt,
-                                 log_macc(x_val, y_val, val_parts, res_thresh),
+                                 # log_macc(x_val, y_val, val_parts, res_thresh),
                                  tensbd, csv_logger],
                       initial_epoch=initial_epoch,
                       class_weight=class_weight)
@@ -534,7 +536,7 @@ if __name__ == '__main__':
                       verbose=verbose,
                       validation_data=(x_val, y_val),
                       callbacks=[modelcheckpnt,
-                                 log_macc(x_val, y_val, val_parts, res_thresh),
+                                 # log_macc(x_val, y_val, val_parts, res_thresh),
                                  tensbd, csv_logger],
                       initial_epoch=initial_epoch)
 
