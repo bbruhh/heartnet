@@ -1,7 +1,7 @@
 %% Spectral characteristics average per dataset
 % figure('units','normalized','outerposition',[0 0 1 1]) %% for loglog plot maximize figure
 a=[];
-for it=0:5
+% for it=0:5
 clearvars -except it a
 folder_idx=it; %index for training folder [0 to 5]
 datapath=['/media/taufiq/Data/heart_sound/Heart_Sound/Physionet/training/training-' 'a'+folder_idx '/'];
@@ -102,4 +102,4 @@ end
 % ylabel('Magnitude');
 % title(['Freq characteristics per sensor (normal)']);
 a(it+1,:)=mean(Avg);
-end
+% end
